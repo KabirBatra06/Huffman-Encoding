@@ -117,8 +117,6 @@ int main(int argc, char **argv)
       fprintf(stderr, "cannot allocate memory to count the characters in input file.  Quit.\n");
       return EXIT_FAILURE;
    }
- 
-   // Your code should go here
 
    FILE * out1 = fopen(argv[2], "w");
    if (out1 == NULL) {
