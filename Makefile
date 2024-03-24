@@ -1,7 +1,7 @@
 CFLAGS = -std=c99 -g -Wall -Wshadow --pedantic -Wvla -Werror
 GCC = gcc $(CFLAGS)
-EXEC = hw14
-OBJS =  hw14.o utility.o
+EXEC = main
+OBJS =  main.o utility.o
 VALGRIND = valgrind --tool=memcheck --leak-check=yes --verbose
 
 $(EXEC): $(OBJS)
