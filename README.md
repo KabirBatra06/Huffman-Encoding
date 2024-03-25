@@ -73,10 +73,7 @@ Encoding tree for string go go gophers can be represented as following using pre
 
 `001g1o001s1 001e1h01p1r0`
 
-Here ASCII character `1` is written before each leaf node followed by character stored at the leaf node, character `0` is written for a non leaf node and 0 is added at the end to signify end of the tree.
-
-We can further reduce total number of bits if we use bits `1` and `0` in place of ASCII characters `'1'` and `'0'` to represent leaf and non leaf nodes and the end of the tree.
-Note that ASCII characters stored at each lead are still written using 8 bits. 
+Here bit `1` is written before each leaf node followed by character stored at the leaf node, bit `0` is written for a non leaf node and 0 is added at the end to signify end of the tree.
 
 In particular, it is not possible to write just one single bit to a file, minimum unit of memory you can access in C is a byte. We should accumulate 8 bits in a buffer and then write it to the file. If we are writing  the above data for tree, first three bits in the first byte would be 001 followed by 5 most significant bits of ASCII value of character 'g'. Remaining 3 bits of character 'g' would go as first three most significant bits of the second byte.
 
@@ -88,55 +85,20 @@ If the binary representation of ASCII value of character `'g'` is `01100111` and
 
 The last byte may not contain 8 meaningful bits, you should pad remaining it with `0` bits in remaining places.
 
-You can look at the function given [here](https://github.com/yunghsianglu/IntermediateCProgramming/blob/3eee24660f99a641cc2a445733bd154595ff1915/Ch24/utility.c) which accumulates bits and writes a byte to a file.
+# Code Logic
 
-# What you have to do?
-
-We have provided the starter code that creates an array `asciiCount` of size `ASCII_SIZE` which stores the count of each character at the index of that character’s ASCII value. Value of `ASCII_SIZE` is `256`, defined in `huffman.h` file.
+The code creates an array `asciiCount` of size `ASCII_SIZE` which stores the count of each character at the index of that character’s ASCII value. Value of `ASCII_SIZE` is `256`, defined in `huffman.h` file.
 
 e.g if input file contains character `‘a’` three times and ASCII value of `‘a’` is 97, `asciiCount[97]` will store value `3`.
 
-To create and maintain the sorted list of trees according to their weight, you should implement a linked list, with each node containing the count and and an address that points to the root of binary tree.i You should only create tree nodes for characters having non zero count in array `asciiCount`.
-We have also given you sample header file which has structure definitions that you will need to implement binary tree and linked list. You have the flexibility, however to design or modify all the files. 
+To create and maintain the sorted list of trees according to their weight, a linked list is implimented, with each node containing the count and and an address that points to the root of binary tree.I only create tree nodes for characters having non zero count in array `asciiCount`.
 
-You will have to use bit-wise operations for generating the header information. You should use "`<<`", "`>>`" , "`|`" and "`&`" bit-wise operators and different masks to split the character into chunks of bits desired and shift operators to move the extracted bits to correct positions.
+I use bit-wise operations for generating the header information. I use "`<<`", "`>>`" , "`|`" and "`&`" bit-wise operators and different masks to split the character into chunks of bits desired and shift operators to move the extracted bits to correct positions.
 
-Your program should read an input file (its filename will be provided to the program as `argv[1]`) and produce three output files :
-`pa15 inputFileName outputFilename1 outputFilename2 outputFilename3`
+The program reads an input file (its filename is provided to the program as `argv[1]`) and produces three output files :
 
-**Output file 1** should consist only the characters that appear in the input file and their count, separated by a ‘:’ character. Characters should be sorted in the ascending order according to the count. If two characters have the same number of occurrence, character with the smaller ASCII value should appear first. Do not include any other extra characters. Sample files `gophers_sorted`, `basic_sorted`, `woods_sorted`, `para_sorted` are provided for corresponding input files. 
+**Output file 1** consists only the characters that appear in the input file and their count, separated by a ‘:’ character. Characters are sorted in the ascending order according to the count. If two characters have the same number of occurrence, character with the smaller ASCII value appear first. 
 
-Input file may contain any character in the ASCII table.
-*First character that you see in `basic_sorted` file followed by count 1 is the newline character.* 
+**Output file 2** consists of characters and stream of 0 and 1 (‘0’ and ‘1’ are characters and not bits) corresponding to the Huffman code of the character, seperated by ':' character. 
 
-**Output file 2** should consist of characters and stream of 0 and 1 (‘0’ and ‘1’ are characters and not bits) corresponding to the Huffman code of the character, seperated by ':' character. Sample files `gophers_huffman`, `basic_huffman`, `woods_huffman`, `para_huffman` are provided for corresponding input files.
-
-**Output file 3** should contain the header information which is the representation of the encoding binary tree using pre-order traversal. The last byte in the output file may need padding bits of 0 in least significant positions. Sample files `gophers_header`, `basic_header`, `woods_header` and `para_header` are provided for corresponding input files.
-
-## Development plan
-
-As always, we recommend developing your code in stages. We recommend building up your code in the following way (but you are free to structure your code differently!)
-
-1. Create a Tree data structure. Each node in the Huffman tree should have a label---if it's a leaf node, this should be the ASCII code of the symbol, if it's an interior node, it can be something arbitrary. Each node should also have a count, representing the total count of all the symbols in that tree. Create helper functions that can merge together two Huffman trees to create a new Huffman tree (don't forget to update the counts)
-2. Create code to print out the Huffman tree in pre-order. You can use this code to generate output file 2. Figure out how to get your pre-order print function to print out the code; note that this is just the sequence of steps you took to get to the node in the recursion. Think about how you kept track of paths in HW11. 
-3. Create another variant of a pre-order traversal to generate output file 3. Note the difference: output file 2 only cares about printing out leaf nodes, but needs to print the "path" for each node. Output file 3 doesn't care about the path, but needs to print out information for non-leaf nodes (a `0` bit) and for leaf nodes (a `1` bit as well as the bit representation of the symbol). Output file 3 also needs to do this using binary data.
-4. Create a sorted linked list structure to store the list of Huffman trees. You can use a variant of the sorted list structure you built for HW11. Note that the "data" stored in each list node is a Huffman tree, not a character string, and you need to compare based on counts. When inserting a new node into the list, it should go _after_ any nodes that have the same count. We will post a version of the Hw11 linked list, in case you couldn't get that to work.
-5. Write code to create the initial list of Huffman trees, one per symbol in the input file. Note that you can write a helper function that walks over this list and prints out information about the trees to produce output file 1.
-6. Write code to build up the Huffman tree. Note that this code requires specifically removing the first two elements of the list each time to combine them, so you may need to add functionality to your list to do so. Don't forget to free list nodes you don't need anymore!
-
-Once you've done step 6, you can return to your functions from steps 2 and 3 to generate the needed output files.
-
-## Testing your code
-You will need to write your own makefile to implement the code. 
-We have provided you with input files and expected files in the inputs and expected folders respectively. 
-You should use `‘diff’` command to ensure that there is no difference between the expected files and your output files for the given input files.
-You can use `"xxd"` command which creates a hexdump of the given input file, which shows the contents of a file in hexadecimal representation for byte-wise comparison of expected header file and your header file. 
-
-## What to turn in :
-1. All source files you need to compile and create the executable.
-2. A Makefile that specifies a target called `all` that builds producing an executable that must be called `pa15`. Your Makefile should also contain a target called `clean` that removes all intermediate files. Your executable ‘pa15’ should accept three arguments. E.g.: 
-
-`./pa15 gophers gophers_sorted gophers_huffman gophers_header`
-
-## Deadlines :
-You can submit this assignment till Friday, 28th April. As this is the dead exam week and you may have a hectic schedule, you can also take free extension till Sunday, 30th April. There will be late penalty charged for every day after Sunday till Wednesday. We will not accept any submission after Wednesday 3rd May.
+**Output file 3** contains the header information which is the representation of the encoding binary tree using pre-order traversal. The last byte in the output file may need padding bits of 0 in least significant positions.
